@@ -1,7 +1,7 @@
 import { Env, PriceSnapshot } from "./types";
 import { getWatches, getLatestPrice, getLastCheck, getPriceHistory, getSettings } from "./storage";
 
-const SOURCES = ["stubhub", "seatgeek", "vivid-seats", "gametime", "tickpick", "ticketdata"];
+const SOURCES = ["stubhub", "seatgeek", "vivid-seats", "gametime", "tickpick"];
 
 export async function renderDashboard(env: Env): Promise<Response> {
   const watches = await getWatches(env);
@@ -94,7 +94,7 @@ function buildHtml(watchData: any[], settings: any): string {
     .si-price{font-size:.9rem;font-weight:700;color:#6a9e6f;white-space:nowrap}
     .si-genre{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:600;background:#efe6f5;color:#7a5694;margin-top:3px}
     .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:.68rem;font-weight:600}
-    .badge-on{background:#c8e6d0;color:#2d5e3a}.badge-off{background:#efe6f5;color:#8a7699}
+    .badge-on{background:#b6e0c1;color:#fff}.badge-off{background:#efe6f5;color:#8a7699}
     .empty{text-align:center;color:#c4b5cc;padding:40px;font-size:.9rem}
     .empty::before{content:'\\1F338 ';font-size:1.2em}
     .empty::after{content:' \\1F338';font-size:1.2em}
@@ -112,7 +112,7 @@ function buildHtml(watchData: any[], settings: any): string {
     .accordion{border:1px solid #e6dced;border-radius:14px;margin-bottom:10px;overflow:hidden;background:rgba(255,255,255,.85);backdrop-filter:blur(8px)}
     .accordion-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;transition:background .15s}
     .accordion-header:hover{background:rgba(230,220,237,.3)}
-    .accordion-title{font-family:'Playfair Display',serif;font-weight:700;font-size:.95rem;color:#3a2d4f}
+    .accordion-title{font-family:'Playfair Display',serif;font-weight:700;font-style:italic;font-size:.95rem;color:#3a2d4f}
     .accordion-meta{font-size:.75rem;color:#8a7699}
     .accordion-arrow{font-size:1.2rem;color:#8a7699;transition:transform .2s}
     .accordion-arrow.open{transform:rotate(180deg)}
@@ -321,7 +321,7 @@ function renderTrackedView(container) {
 
     html += '<div class="accordion">'+
       '<div class="accordion-header" data-acc="'+idx+'">'+
-        '<div><div class="accordion-title">&#127800; '+event.name+'</div>'+
+        '<div><div class="accordion-title">&#127804; '+event.name+'</div>'+
           '<div class="accordion-meta">'+event.venue+', '+event.city+' &middot; '+dateStr+' &middot; '+daysLeft+' days '+badge+'</div>'+
         '</div>'+
         '<span class="accordion-arrow" id="arrow-'+idx+'">&#9660;</span>'+
@@ -422,7 +422,7 @@ function renderAccordionChart(idx) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const datasets = [];
-  const colors = {stubhub:'#3b1c8c',seatgeek:'#4caf50',gametime:'#1a1a2e','vivid-seats':'#e91e63',tickpick:'#ff9800',ticketdata:'#9b72b0'};
+  const colors = {stubhub:'#3b1c8c',seatgeek:'#4caf50',gametime:'#1a1a2e','vivid-seats':'#e91e63',tickpick:'#ff9800'};
   for (const [source, data] of Object.entries(event.sources || {})) {
     if (!data.history || data.history.length === 0) continue;
     datasets.push({
@@ -516,7 +516,7 @@ function renderChart(event) {
   const ctx = document.getElementById('priceChart').getContext('2d');
   if (chart) chart.destroy();
   const datasets = [];
-  const colors = {stubhub:'#3b1c8c',seatgeek:'#4caf50',gametime:'#1a1a2e','vivid-seats':'#e91e63',tickpick:'#ff9800',ticketdata:'#9b72b0'};
+  const colors = {stubhub:'#3b1c8c',seatgeek:'#4caf50',gametime:'#1a1a2e','vivid-seats':'#e91e63',tickpick:'#ff9800'};
   for (const [source, data] of Object.entries(event.sources)) {
     if (data.history.length === 0) continue;
     datasets.push({
