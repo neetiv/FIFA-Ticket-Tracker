@@ -45,19 +45,19 @@ function buildHtml(watchData: any[], settings: any): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event Ticket Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Inter',system-ui,-apple-system,sans-serif;background-color:#e4dae9;color:#3a2d4f;padding:16px;max-width:960px;margin:0 auto;min-height:100vh;position:relative}
-    body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background-image:url('/bg.png');background-size:cover;background-attachment:fixed;background-position:center;opacity:.65;z-index:0;pointer-events:none}
+    body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background-image:url('/bg.png');background-size:cover;background-attachment:fixed;background-position:center;opacity:.7;z-index:0;pointer-events:none}
     body>*{position:relative;z-index:1}
     h1{font-family:'Playfair Display',serif;font-size:2rem;color:#5a3d7a;margin-bottom:2px;font-weight:900}
-    h2{font-family:'Dancing Script',cursive;font-size:1.4rem;color:#5a3d7a;margin:18px 0 10px;font-weight:700}
+    h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:#5a3d7a;margin:18px 0 10px;font-weight:700;font-style:italic}
     .subtitle{color:#8a7699;font-size:.82rem;margin-bottom:16px}
     .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;border-bottom:2px solid #e6dced;padding-bottom:8px}
-    .tab{padding:8px 16px;border-radius:20px;border:none;background:transparent;color:#8a7699;cursor:pointer;font-size:.84rem;font-weight:500;transition:all .15s}
+    .tab{padding:8px 16px;border-radius:20px;border:none;background:transparent;color:#8a7699;cursor:pointer;font-family:'Playfair Display',serif;font-size:.88rem;font-weight:700;font-style:italic;transition:all .15s}
     .tab:hover{background:#efe6f5;color:#5a3d7a}
     .tab.active{background:#9b72b0;color:#fff}
     .tab.active:hover{background:#8a5fa0}
@@ -76,11 +76,11 @@ function buildHtml(watchData: any[], settings: any): string {
     input:focus,select:focus{outline:none;border-color:#9b72b0}
     .btn{padding:8px 16px;border-radius:20px;border:none;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .15s}
     .btn-primary{background:#9b72b0;color:#fff}.btn-primary:hover{background:#8a5fa0}
-    .btn-mint{background:#c8e6d0;color:#fff}.btn-mint:hover{background:#aed9ba}
-    .btn-pink{background:#f2a0b5;color:#fff}.btn-pink:hover{background:#eb8da3}
+    .btn-mint{background:#b6e0c1;color:#fff}.btn-mint:hover{background:#9ed4ab}
+    .btn-pink{background:#ff94d8;color:#fff}.btn-pink:hover{background:#f07cc4}
     .btn-danger{background:#f5d5e0;color:#8b3a4a}.btn-danger:hover{background:#f0c0cf}
     .btn-sm{padding:5px 12px;font-size:.75rem}
-    .form-row{display:flex;gap:8px;align-items:end;margin-bottom:10px}
+    .form-row{display:flex;gap:8px;align-items:start;margin-bottom:10px}
     .form-group{flex:1}
     .form-group label{display:block;font-size:.72rem;color:#8a7699;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
     .search-results{max-height:500px;overflow-y:auto;margin-top:10px}
@@ -89,7 +89,7 @@ function buildHtml(watchData: any[], settings: any): string {
     .si-img{width:80px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0}
     .si-info{flex:1;min-width:0}
     .si-name{font-size:.88rem;color:#3a2d4f;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .si-detail{font-size:.72rem;color:#8a7699;margin-top:2px}
+    .si-detail{font-size:.78rem;color:#8a7699;margin-top:2px}
     .si-price{font-size:.9rem;font-weight:700;color:#6a9e6f;white-space:nowrap}
     .si-genre{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:600;background:#efe6f5;color:#7a5694;margin-top:3px}
     .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:.68rem;font-weight:600}
@@ -102,6 +102,12 @@ function buildHtml(watchData: any[], settings: any): string {
     .info-detail{font-size:.78rem;color:#8a7699}
     .watch-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid #e6dced;border-radius:10px;margin-bottom:6px;background:#f8f4fb}
     .hidden{display:none}
+    .modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+    .modal{background:#fff;border-radius:16px;padding:24px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+    .modal h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:#5a3d7a;margin-bottom:8px}
+    .modal p{font-size:.85rem;color:#3a2d4f;line-height:1.5;margin-bottom:8px}
+    .modal .close-btn{float:right;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#8a7699;line-height:1}
+    .si-name.clickable{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
     .hero{text-align:center;padding:20px 0 10px}
     .hero h1{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900}
     .hero h1 .grad{background:linear-gradient(135deg,#7a4d9e,#c47a9e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -200,11 +206,18 @@ async function doSearch() {
       const d = r.date ? new Date(r.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
       const price = r.minPrice ? '$'+r.minPrice+(r.maxPrice&&r.maxPrice!==r.minPrice?' – $'+r.maxPrice:'') : '';
       const img = r.imageUrl ? '<img class="si-img" src="'+r.imageUrl+'" alt="">' : '';
-      const genre = r.genre ? '<span class="si-genre">'+r.genre+'</span>' : '';
+      const seg = r.segment && r.segment !== 'Undefined' ? '<span class="si-genre" style="background:#e6dced;color:#5a3d7a">'+r.segment+'</span> ' : '';
+      const genre = r.genre && r.genre !== 'Undefined' ? '<span class="si-genre">'+r.genre+'</span>' : '';
+      const cityState = (r.city||'')+(r.state?', '+r.state:'');
+      const loc = r.venue+(cityState?'; '+cityState:'');
       const isTracked = WATCHES.some(w => w.ticketmasterEventId === r.eventId);
+      const hasInfo = r.info && r.info.length > 0;
+      const infoData = hasInfo ? ' data-info="'+encodeURIComponent(r.info)+'" data-ename="'+encodeURIComponent(r.name)+'"' : '';
+      const infoIcon = hasInfo ? ' <span style="font-size:.7em;opacity:.6" title="Click for details">&#8505;&#65039;</span>' : '';
       return '<div class="search-item">'+img+
-        '<div class="si-info"><div class="si-name">'+r.name+'</div>'+
-          '<div class="si-detail">'+r.venue+', '+r.city+(d?' &middot; '+d:'')+'</div>'+genre+
+        '<div class="si-info"><div class="si-name'+(hasInfo?' clickable':'')+'"'+infoData+'>'+r.name+infoIcon+'</div>'+
+          '<div class="si-detail"><strong>'+loc+'</strong></div>'+
+          (d?'<div class="si-detail" style="color:#5a3d7a;font-weight:500">'+d+'</div>':'')+seg+genre+
         '</div>'+
         (price?'<div class="si-price">'+price+'</div>':'')+
         (r.url?'<a href="'+r.url+'" target="_blank" class="btn btn-pink btn-sm" style="margin-right:4px">Buy Tickets</a>':'')+
@@ -215,6 +228,11 @@ async function doSearch() {
     }).join('')+'</div>';
     box.querySelectorAll('button[data-event]').forEach(btn => {
       btn.addEventListener('click', () => trackEvent(JSON.parse(decodeURIComponent(btn.dataset.event))));
+    });
+    box.querySelectorAll('.si-name.clickable').forEach(el => {
+      el.addEventListener('click', () => {
+        showModal(decodeURIComponent(el.dataset.ename), decodeURIComponent(el.dataset.info));
+      });
     });
   } catch(e) { box.innerHTML = '<div class="empty">Search failed.</div>'; }
 }
@@ -438,6 +456,17 @@ function renderSettingsView(container) {
 }
 
 // =============== UTILS ===============
+function showModal(title, text) {
+  const existing = document.querySelector('.modal-bg');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-bg';
+  modal.innerHTML = '<div class="modal"><button class="close-btn">&times;</button><h3>'+title+'</h3><p>'+text.replace(/\\n/g,'<br>')+'</p></div>';
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  modal.querySelector('.close-btn').addEventListener('click', () => modal.remove());
+  document.body.appendChild(modal);
+}
+
 function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').substring(0,60); }
 function timeAgo(d) {
   const s = Math.floor((Date.now()-d.getTime())/1000);
