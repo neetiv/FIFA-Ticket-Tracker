@@ -50,7 +50,9 @@ function buildHtml(watchData: any[], settings: any): string {
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',system-ui,-apple-system,sans-serif;background-color:#ece4f0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg transform='translate(40,40)'%3E%3Cellipse cx='0' cy='-12' rx='5' ry='9' fill='%23fff' opacity='.7'/%3E%3Cellipse cx='11.4' cy='-3.7' rx='5' ry='9' fill='%23fff' opacity='.7' transform='rotate(72)'/%3E%3Cellipse cx='7' cy='9.7' rx='5' ry='9' fill='%23fff' opacity='.7' transform='rotate(144)'/%3E%3Cellipse cx='-7' cy='9.7' rx='5' ry='9' fill='%23fff' opacity='.7' transform='rotate(216)'/%3E%3Cellipse cx='-11.4' cy='-3.7' rx='5' ry='9' fill='%23fff' opacity='.7' transform='rotate(288)'/%3E%3Ccircle cx='0' cy='0' r='4' fill='%23fef9c3' opacity='.8'/%3E%3C/g%3E%3C/svg%3E");background-size:80px 80px;color:#3a2d4f;padding:16px;max-width:960px;margin:0 auto;min-height:100vh}
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;background-color:#e4dae9;color:#3a2d4f;padding:16px;max-width:960px;margin:0 auto;min-height:100vh;position:relative}
+    body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background-image:url('/bg.png');background-size:cover;background-attachment:fixed;background-position:center;opacity:.65;z-index:0;pointer-events:none}
+    body>*{position:relative;z-index:1}
     h1{font-family:'Playfair Display',serif;font-size:2rem;color:#5a3d7a;margin-bottom:2px;font-weight:900}
     h2{font-family:'Dancing Script',cursive;font-size:1.4rem;color:#5a3d7a;margin:18px 0 10px;font-weight:700}
     .subtitle{color:#8a7699;font-size:.82rem;margin-bottom:16px}
@@ -74,8 +76,8 @@ function buildHtml(watchData: any[], settings: any): string {
     input:focus,select:focus{outline:none;border-color:#9b72b0}
     .btn{padding:8px 16px;border-radius:20px;border:none;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .15s}
     .btn-primary{background:#9b72b0;color:#fff}.btn-primary:hover{background:#8a5fa0}
-    .btn-mint{background:#c8e6d0;color:#2d4f3a}.btn-mint:hover{background:#aed9ba}
-    .btn-pink{background:#f5d5e0;color:#6b3a4a}.btn-pink:hover{background:#f0c0cf}
+    .btn-mint{background:#c8e6d0;color:#fff}.btn-mint:hover{background:#aed9ba}
+    .btn-pink{background:#f2a0b5;color:#fff}.btn-pink:hover{background:#eb8da3}
     .btn-danger{background:#f5d5e0;color:#8b3a4a}.btn-danger:hover{background:#f0c0cf}
     .btn-sm{padding:5px 12px;font-size:.75rem}
     .form-row{display:flex;gap:8px;align-items:end;margin-bottom:10px}
@@ -93,29 +95,30 @@ function buildHtml(watchData: any[], settings: any): string {
     .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:.68rem;font-weight:600}
     .badge-on{background:#c8e6d0;color:#2d5e3a}.badge-off{background:#efe6f5;color:#8a7699}
     .empty{text-align:center;color:#c4b5cc;padding:40px;font-size:.9rem}
-    .empty::before{content:'\\1F33C ';font-size:1.2em}
-    .empty::after{content:' \\1F33C';font-size:1.2em}
+    .empty::before{content:'\\1F338 ';font-size:1.2em}
+    .empty::after{content:' \\1F338';font-size:1.2em}
     .footer{text-align:center;font-size:.68rem;color:#c4b5cc;margin-top:24px}
     .info-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px}
     .info-detail{font-size:.78rem;color:#8a7699}
     .watch-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid #e6dced;border-radius:10px;margin-bottom:6px;background:#f8f4fb}
     .hidden{display:none}
     .hero{text-align:center;padding:20px 0 10px}
-    .hero h1{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#7a4d9e,#c47a9e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero h1{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900}
+    .hero h1 .grad{background:linear-gradient(135deg,#7a4d9e,#c47a9e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
     .hero-search{max-width:600px;margin:0 auto}
   </style>
 </head>
 <body>
   <div class="hero">
-    <h1>&#127804; Event Ticket Tracker &#127804;</h1>
-    <p class="subtitle">&#127804; Search events &middot; Track prices &middot; Get alerts when they drop &#127804;</p>
+    <h1>&#127804; <span class="grad">Event Ticket Tracker</span> &#127804;</h1>
+    <p class="subtitle">&#127800; Search events &#127800; Track prices &#127800; Get alerts when they drop &#127800;</p>
   </div>
 
   <div class="tabs" id="tabs"></div>
   <div id="view"></div>
 
   <div class="footer">
-    &#127804; Powered by Ticketmaster Discovery API &middot; Prices may not reflect all resale listings &#127804;
+    &#127800; Powered by Ticketmaster Discovery API &middot; Prices may not reflect all resale listings &#127800;
   </div>
 
 <script>
@@ -204,9 +207,10 @@ async function doSearch() {
           '<div class="si-detail">'+r.venue+', '+r.city+(d?' &middot; '+d:'')+'</div>'+genre+
         '</div>'+
         (price?'<div class="si-price">'+price+'</div>':'')+
+        (r.url?'<a href="'+r.url+'" target="_blank" class="btn btn-pink btn-sm" style="margin-right:4px">Buy Tickets</a>':'')+
         (isTracked
-          ? '<span class="badge badge-on">&#127804; Tracking</span>'
-          : '<button class="btn btn-mint btn-sm" data-event="'+encodeURIComponent(JSON.stringify(r))+'">&#127804; Track</button>')+
+          ? '<span class="badge badge-on">&#127800; Tracking</span>'
+          : '<button class="btn btn-mint btn-sm" data-event="'+encodeURIComponent(JSON.stringify(r))+'">Track</button>')+
       '</div>';
     }).join('')+'</div>';
     box.querySelectorAll('button[data-event]').forEach(btn => {
@@ -333,7 +337,7 @@ function renderChart(event) {
 function renderSettingsView(container) {
   const curMethod = SETTINGS.alertMethod || 'ntfy';
   container.innerHTML =
-    '<h2>&#127804; Notification Settings</h2>'+
+    '<h2>&#127800; Notification Settings</h2>'+
     '<div class="panel">'+
       '<div class="form-group" style="margin-bottom:12px"><label>Alert Method</label>'+
         '<select id="sMethod"><option value="ntfy"'+(curMethod==='ntfy'?' selected':'')+'>ntfy (push notifications)</option><option value="sms"'+(curMethod==='sms'?' selected':'')+'>SMS (text messages)</option><option value="both"'+(curMethod==='both'?' selected':'')+'>Both</option></select></div>'+
@@ -344,10 +348,26 @@ function renderSettingsView(container) {
         '<div class="form-group" style="margin-bottom:10px"><label>SMS Gateway Email</label><input type="text" id="sSms" value="'+(SETTINGS.smsGatewayEmail||'')+'" placeholder="2065551234@tmomail.net"></div></div>'+
       '<button class="btn btn-primary" id="saveSettings">Save Settings</button>'+
     '</div>'+
-    '<h2>&#127804; Tracked Events</h2>'+
+    '<h2>&#127800; New Event Alerts</h2>'+
+    '<div class="panel">'+
+      '<div class="card-sub" style="margin-bottom:10px">Get notified when new events are announced in your city.</div>'+
+      '<div id="cityWatchList"></div>'+
+      '<div class="form-row" style="margin-top:10px">'+
+        '<div class="form-group"><label>City</label><input type="text" id="cwCity" placeholder="e.g. Seattle, LA, NYC"></div>'+
+        '<div class="form-group"><label>Categories</label>'+
+          '<select id="cwCat" multiple style="height:80px">'+
+            '<option value="Music" selected>Music</option>'+
+            '<option value="Sports">Sports</option>'+
+            '<option value="Arts & Theatre">Arts & Theatre</option>'+
+            '<option value="Comedy">Comedy</option>'+
+          '</select></div>'+
+        '<div><button class="btn btn-mint btn-sm" id="addCityWatch">Add</button></div>'+
+      '</div>'+
+    '</div>'+
+    '<h2>&#127800; Tracked Events</h2>'+
     '<div class="panel" id="watchList"></div>'+
-    '<h2>&#127804; Manual Actions</h2>'+
-    '<div class="panel"><button class="btn btn-primary" id="manualCheck">Run Price Check Now</button> <span id="checkStatus" style="font-size:.82rem;color:#8a7265"></span></div>';
+    '<h2>&#127800; Manual Actions</h2>'+
+    '<div class="panel"><button class="btn btn-primary" id="manualCheck">Run Price Check Now</button> <span id="checkStatus" style="font-size:.82rem;color:#8a7699"></span></div>';
 
   const wl = document.getElementById('watchList');
   if (WATCHES.length === 0) {
@@ -367,13 +387,46 @@ function renderSettingsView(container) {
     });
   }
 
+  // City watch list
+  const cwl = document.getElementById('cityWatchList');
+  const cityWatches = SETTINGS.cityWatches || [];
+  if (cityWatches.length > 0) {
+    cwl.innerHTML = cityWatches.map((cw, i) =>
+      '<div class="watch-item"><div>&#127800; <strong>'+cw.city+'</strong> &mdash; '+cw.categories.join(', ')+
+        (cw.enabled?'':' <span style="color:#c4b5cc">(paused)</span>')+'</div>'+
+        '<button class="btn btn-danger btn-sm" data-cwi="'+i+'">Remove</button></div>'
+    ).join('');
+    cwl.querySelectorAll('button[data-cwi]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        cityWatches.splice(parseInt(btn.dataset.cwi), 1);
+        const s = Object.assign({}, SETTINGS, {cityWatches});
+        await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(s)});
+        location.reload();
+      });
+    });
+  } else {
+    cwl.innerHTML = '<div class="card-sub">No city watches set up yet.</div>';
+  }
+
+  document.getElementById('addCityWatch').addEventListener('click', async () => {
+    const city = document.getElementById('cwCity').value.trim();
+    if (!city) { alert('Enter a city'); return; }
+    const sel = document.getElementById('cwCat');
+    const cats = Array.from(sel.selectedOptions).map(o => o.value);
+    if (cats.length === 0) { alert('Select at least one category'); return; }
+    cityWatches.push({city, categories: cats, enabled: true});
+    const s = Object.assign({}, SETTINGS, {cityWatches});
+    await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(s)});
+    location.reload();
+  });
+
   document.getElementById('sMethod').addEventListener('change', function() {
     document.getElementById('ntfySettings').classList.toggle('hidden', this.value==='sms');
     document.getElementById('smsSettings').classList.toggle('hidden', this.value==='ntfy');
   });
   document.getElementById('saveSettings').addEventListener('click', async () => {
     const method = document.getElementById('sMethod').value;
-    const s = {alertMethod:method, ntfyTopic:document.getElementById('sNtfy').value.trim(), smsGatewayEmail:document.getElementById('sSms').value.trim()||undefined};
+    const s = {alertMethod:method, ntfyTopic:document.getElementById('sNtfy').value.trim(), smsGatewayEmail:document.getElementById('sSms').value.trim()||undefined, cityWatches};
     await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(s)});
     alert('Settings saved!');
   });

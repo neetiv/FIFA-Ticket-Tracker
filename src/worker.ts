@@ -1,8 +1,9 @@
 import { Env, WatchedEvent } from "./types";
 import { searchEvents, fetchEventPrice } from "./sources/ticketmaster";
 import { savePrice, getWatches, addWatch, removeWatch, getSettings, saveSettings } from "./storage";
-import { checkAndAlert } from "./alerts";
+import { checkAndAlert, notifyNewEvents } from "./alerts";
 import { renderDashboard, handleApiPrices } from "./dashboard";
+import BG_BASE64 from "./bg";
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -11,10 +12,33 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
+async function checkNewEvents(env: Env): Promise<void> {
+  const settings = await getSettings(env);
+  if (!settings.cityWatches?.length) return;
+
+  for (const cw of settings.cityWatches) {
+    if (!cw.enabled) continue;
+
+    for (const category of cw.categories) {
+      const results = await searchEvents("", env.TICKETMASTER_API_KEY, cw.city, category);
+      const seenKey = `seen:${cw.city.toLowerCase()}:${category.toLowerCase()}`;
+      const seenVal = await env.PRICE_DATA.get(seenKey);
+      const seenIds: string[] = seenVal ? JSON.parse(seenVal) : [];
+      const seenSet = new Set(seenIds);
+
+      const newEvents = results.filter((r) => !seenSet.has(r.eventId));
+      if (newEvents.length > 0) {
+        await notifyNewEvents(env, settings, cw.city, category, newEvents);
+        const updatedSeen = [...seenIds, ...newEvents.map((e) => e.eventId)].slice(-500);
+        await env.PRICE_DATA.put(seenKey, JSON.stringify(updatedSeen), { expirationTtl: 90 * 24 * 60 * 60 });
+      }
+    }
+  }
+}
+
 export default {
   async scheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
     const watches = await getWatches(env);
-    if (watches.length === 0) return;
 
     for (const event of watches) {
       if (new Date(event.date) < new Date()) continue;
@@ -26,6 +50,8 @@ export default {
         await checkAndAlert(env, event, snapshot);
       }
     }
+
+    await checkNewEvents(env);
   },
 
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
@@ -34,20 +60,22 @@ export default {
 
     if (path === "/" || path === "") return renderDashboard(env);
 
-    // Search events
+    if (path === "/bg.png") {
+      const bytes = Uint8Array.from(atob(BG_BASE64), c => c.charCodeAt(0));
+      return new Response(bytes, {
+        headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" },
+      });
+    }
+
     if (path === "/api/search" && request.method === "GET") {
       const q = url.searchParams.get("q") || "";
       const city = url.searchParams.get("city") || undefined;
       const category = url.searchParams.get("category") || undefined;
       if (!env.TICKETMASTER_API_KEY) return json({ error: "API key not set" }, 500);
-      const results = await searchEvents(q, env.TICKETMASTER_API_KEY, city, category);
-      return json({ results });
+      return json({ results: await searchEvents(q, env.TICKETMASTER_API_KEY, city, category) });
     }
 
-    // Watches
-    if (path === "/api/watches" && request.method === "GET") {
-      return json({ watches: await getWatches(env) });
-    }
+    if (path === "/api/watches" && request.method === "GET") return json({ watches: await getWatches(env) });
     if (path === "/api/watches" && request.method === "POST") {
       const body = (await request.json()) as WatchedEvent;
       if (!body.slug || !body.name) return json({ error: "slug and name required" }, 400);
@@ -55,23 +83,14 @@ export default {
       return json({ ok: true });
     }
     const del = path.match(/^\/api\/watches\/([a-z0-9-]+)$/);
-    if (del && request.method === "DELETE") {
-      await removeWatch(env, del[1]);
-      return json({ ok: true });
-    }
+    if (del && request.method === "DELETE") { await removeWatch(env, del[1]); return json({ ok: true }); }
 
-    // Settings
     if (path === "/api/settings" && request.method === "GET") return json(await getSettings(env));
-    if (path === "/api/settings" && request.method === "POST") {
-      await saveSettings(env, await request.json());
-      return json({ ok: true });
-    }
+    if (path === "/api/settings" && request.method === "POST") { await saveSettings(env, await request.json()); return json({ ok: true }); }
 
-    // Price history
     const pm = path.match(/^\/api\/prices\/([a-z0-9-]+)$/);
     if (pm) return handleApiPrices(env, pm[1]);
 
-    // Ingest from scraper
     if (path === "/api/ingest" && request.method === "POST") {
       const body = await request.json() as any;
       const watches = await getWatches(env);
@@ -85,12 +104,8 @@ export default {
       return json({ ok: true, saved });
     }
 
-    // Health
-    if (path === "/api/status") {
-      return json({ ok: true, timestamp: new Date().toISOString() });
-    }
+    if (path === "/api/status") return json({ ok: true, timestamp: new Date().toISOString() });
 
-    // Manual check
     if (path === "/api/check" && request.method === "POST") {
       await this.scheduled({} as ScheduledEvent, env, {} as ExecutionContext);
       return json({ ok: true });

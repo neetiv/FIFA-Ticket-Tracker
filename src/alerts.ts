@@ -54,6 +54,44 @@ export async function checkAndAlert(
   console.log(`Alert sent: ${event.slug} at $${snapshot.minPrice}`);
 }
 
+export async function notifyNewEvents(
+  env: Env,
+  settings: UserSettings,
+  city: string,
+  category: string,
+  events: { name: string; venue: string; date: string; url: string }[]
+): Promise<void> {
+  if (events.length === 0) return;
+
+  const title = `${events.length} new ${category} event${events.length > 1 ? "s" : ""} in ${city}!`;
+  const body = events
+    .slice(0, 5)
+    .map((e) => {
+      const d = e.date ? new Date(e.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+      return `${e.name}${d ? " — " + d : ""}`;
+    })
+    .join("\n") + (events.length > 5 ? `\n...and ${events.length - 5} more` : "");
+
+  const clickUrl = events[0].url || `https://www.ticketmaster.com/search?q=${encodeURIComponent(category + " " + city)}`;
+
+  if (env.DRY_RUN === "true") {
+    console.log(`[DRY RUN] New events: ${title}\n${body}`);
+    return;
+  }
+
+  const method = settings.alertMethod || "ntfy";
+  await Promise.all([
+    (method === "ntfy" || method === "both") && settings.ntfyTopic
+      ? sendNtfy(settings.ntfyTopic, env.NTFY_TOKEN, title, body, clickUrl, "default")
+      : Promise.resolve(),
+    (method === "sms" || method === "both") && settings.smsGatewayEmail
+      ? sendSms(settings.smsGatewayEmail, title, clickUrl)
+      : Promise.resolve(),
+  ]);
+
+  console.log(`New events alert: ${city}/${category} — ${events.length} events`);
+}
+
 async function sendNtfy(topic: string, token: string | undefined, title: string, body: string, url: string, priority: string): Promise<void> {
   const headers: Record<string, string> = {
     Title: title,

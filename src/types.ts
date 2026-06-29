@@ -21,10 +21,17 @@ export interface PriceSnapshot {
   url: string;
 }
 
+export interface CityWatch {
+  city: string;
+  categories: string[];
+  enabled: boolean;
+}
+
 export interface UserSettings {
   alertMethod: "ntfy" | "sms" | "both";
   ntfyTopic: string;
   smsGatewayEmail?: string;
+  cityWatches?: CityWatch[];
 }
 
 export interface Env {
