@@ -1,7 +1,7 @@
 import { Env, PriceSnapshot } from "./types";
 import { getWatches, getLatestPrice, getLastCheck, getPriceHistory, getSettings } from "./storage";
 
-const SOURCES = ["ticketmaster"];
+const SOURCES = ["ticketmaster", "ticketdata"];
 
 export async function renderDashboard(env: Env): Promise<Response> {
   const watches = await getWatches(env);
@@ -43,6 +43,7 @@ function buildHtml(watchData: any[], settings: any): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌼</text></svg>">
   <title>Event Ticket Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -328,8 +329,8 @@ function renderTrackedView(container) {
       '<div class="accordion-body" id="body-'+idx+'">'+
         '<div style="margin-bottom:10px;display:flex;gap:6px;align-items:center">'+
           (event.url?'<a href="'+event.url+'" target="_blank" class="btn btn-pink btn-sm">Buy Tickets</a>':'')+
-          '<button class="btn btn-primary btn-sm check-one" data-slug="'+event.slug+'">&#127804; Check Price Now</button>'+
-          '<span class="check-status-'+idx+'" style="font-size:.75rem;color:#8a7699"></span>'+
+          '<button class="btn btn-primary btn-sm trigger-scrape">&#127804; Scrape Prices</button>'+
+          '<span class="scrape-status" style="font-size:.75rem;color:#8a7699"></span>'+
         '</div>'+
         '<div class="cards">'+cardsHtml+'</div>'+
         '<div class="chart-box"><canvas id="chart-'+idx+'"></canvas></div>'+
@@ -374,23 +375,34 @@ function renderTrackedView(container) {
     });
   });
 
-  // Check single price
-  container.querySelectorAll('.check-one').forEach(btn => {
+  // Trigger scraper
+  container.querySelectorAll('.trigger-scrape').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const slug = btn.dataset.slug;
-      const status = container.querySelector('.check-status-'+btn.closest('.accordion').querySelector('.accordion-header').dataset.acc);
+      const status = btn.nextElementSibling;
       btn.disabled = true;
-      btn.textContent = 'Checking...';
-      if (status) status.textContent = '';
+      btn.textContent = 'Starting scraper...';
       try {
-        await fetch('/api/check?slug='+slug, {method:'POST'});
-        btn.textContent = '\\u{1F33C} Check Price Now';
-        if (status) status.textContent = 'Done! Refresh to see results.';
+        const res = await fetch('/api/scrape', {method:'POST'});
+        const data = await res.json();
+        if (data.ok) {
+          btn.textContent = 'Scraper running...';
+          let sec = 60;
+          status.textContent = 'Refreshing in '+sec+'s';
+          const timer = setInterval(() => {
+            sec--;
+            status.textContent = 'Refreshing in '+sec+'s';
+            if (sec <= 0) { clearInterval(timer); location.reload(); }
+          }, 1000);
+        } else {
+          btn.textContent = '\\u{1F33C} Scrape Prices';
+          status.textContent = 'Failed — check GitHub PAT secret';
+          btn.disabled = false;
+        }
       } catch(e) {
-        btn.textContent = '\\u{1F33C} Check Price Now';
-        if (status) status.textContent = 'Failed.';
+        btn.textContent = '\\u{1F33C} Scrape Prices';
+        status.textContent = 'Error triggering scraper';
+        btn.disabled = false;
       }
-      btn.disabled = false;
     });
   });
 
@@ -410,7 +422,7 @@ function renderAccordionChart(idx) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const datasets = [];
-  const colors = {ticketmaster:'#9b72b0',seatgeek:'#6a9e6f'};
+  const colors = {ticketmaster:'#9b72b0',ticketdata:'#e88ca0',seatgeek:'#6a9e6f'};
   for (const [source, data] of Object.entries(event.sources || {})) {
     if (!data.history || data.history.length === 0) continue;
     datasets.push({
@@ -504,7 +516,7 @@ function renderChart(event) {
   const ctx = document.getElementById('priceChart').getContext('2d');
   if (chart) chart.destroy();
   const datasets = [];
-  const colors = {ticketmaster:'#9b72b0',seatgeek:'#6a9e6f'};
+  const colors = {ticketmaster:'#9b72b0',ticketdata:'#e88ca0',seatgeek:'#6a9e6f'};
   for (const [source, data] of Object.entries(event.sources)) {
     if (data.history.length === 0) continue;
     datasets.push({
@@ -575,7 +587,7 @@ function renderSettingsView(container) {
     '<h2>&#127800; Tracked Events</h2>'+
     '<div class="panel" id="watchList"></div>'+
     '<h2>&#127800; Manual Actions</h2>'+
-    '<div class="panel"><button class="btn btn-primary" id="manualCheck">Run Price Check Now</button> <span id="checkStatus" style="font-size:.82rem;color:#8a7699"></span></div>';
+    '<div class="panel"><button class="btn btn-primary" id="manualCheck">&#127804; Scrape All Prices</button> <span id="checkStatus" style="font-size:.82rem;color:#8a7699"></span></div>';
 
   const wl = document.getElementById('watchList');
   if (WATCHES.length === 0) {
@@ -639,9 +651,32 @@ function renderSettingsView(container) {
     alert('Settings saved!');
   });
   document.getElementById('manualCheck').addEventListener('click', async () => {
-    document.getElementById('checkStatus').textContent = 'Running...';
-    await fetch('/api/check',{method:'POST'});
-    document.getElementById('checkStatus').textContent = 'Done! Refresh to see results.';
+    const btn = document.getElementById('manualCheck');
+    const status = document.getElementById('checkStatus');
+    btn.disabled = true;
+    btn.textContent = 'Starting scraper...';
+    try {
+      const res = await fetch('/api/scrape',{method:'POST'});
+      const data = await res.json();
+      if (data.ok) {
+        btn.textContent = 'Scraper running...';
+        let sec = 60;
+        status.textContent = 'Refreshing in '+sec+'s';
+        const timer = setInterval(() => {
+          sec--;
+          status.textContent = 'Refreshing in '+sec+'s';
+          if (sec <= 0) { clearInterval(timer); location.reload(); }
+        }, 1000);
+      } else {
+        btn.textContent = '\\u{1F33C} Scrape All Prices';
+        status.textContent = 'Failed — is GitHub PAT configured?';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      btn.textContent = '\\u{1F33C} Scrape All Prices';
+      status.textContent = 'Error';
+      btn.disabled = false;
+    }
   });
 }
 

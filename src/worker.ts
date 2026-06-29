@@ -106,6 +106,23 @@ export default {
 
     if (path === "/api/status") return json({ ok: true, timestamp: new Date().toISOString() });
 
+    if (path === "/api/scrape" && request.method === "POST") {
+      if (!env.GITHUB_PAT) return json({ error: "GitHub PAT not configured" }, 500);
+      const res = await fetch(
+        "https://api.github.com/repos/neetiv/Event-Ticket-Tracker/actions/workflows/scrape-prices.yml/dispatches",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.GITHUB_PAT}`,
+            Accept: "application/vnd.github+json",
+            "User-Agent": "Event-Ticket-Tracker/1.0",
+          },
+          body: JSON.stringify({ ref: "main" }),
+        }
+      );
+      return json({ ok: res.status === 204, status: res.status });
+    }
+
     if (path === "/api/check" && request.method === "POST") {
       const slug = url.searchParams.get("slug");
       if (slug) {

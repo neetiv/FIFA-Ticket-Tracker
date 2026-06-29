@@ -39,5 +39,6 @@ export interface Env {
   TICKETMASTER_API_KEY: string;
   NTFY_TOPIC: string;
   NTFY_TOKEN?: string;
+  GITHUB_PAT?: string;
   DRY_RUN: string;
 }
